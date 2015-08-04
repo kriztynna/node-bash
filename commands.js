@@ -38,19 +38,6 @@ function echo(stdin,file,x){
 	done(file,x);
 }
 
-function catFiles(fileList,currOutput,x){
-	fs.readFile(fileList[0],'utf8',function(err,contents){
-		if (err) throw err;
-		currOutput+=contents+'\n';
-		if (fileList.length>1){
-			catFiles(fileList.slice(1),currOutput,x);
-		}
-		else {
-			done(currOutput,x);			
-		}
-	});
-}
-
 function cat(stdin,files,x){
 	if (!stdin){
 		var texts = [];
