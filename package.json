@@ -1,0 +1,14 @@
+{
+  "name": "node-shell",
+  "version": "1.0.0",
+  "description": "jsonpackage",
+  "main": "bash.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "cristina david",
+  "license": "ISC",
+  "dependencies": {
+    "request": "^2.60.0"
+  }
+}
