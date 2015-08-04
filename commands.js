@@ -137,7 +137,7 @@ function uniq(stdin,fileList,cmdList){
 
 function curl(stdin,url,cmdList){
 	var input = setInput(stdin,url);
-	request('http://'+url,function(error,response,body){
+	request('http://'+input,function(error,response,body){
 		if (!error && response.statusCode == 200) {
 			done(body,cmdList);
 		}

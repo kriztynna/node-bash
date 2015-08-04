@@ -7,19 +7,11 @@ process.stdout.write('que pasa > ');
 process.stdin.on('data',function(data){
 	var input = data.toString().trim();
 
-	var cmdList = input.split(/\s*\|\s*/g); // splits on pipes
-	var beforePipe = cmdList[0]; // first command + possible file
-	var afterPipe = cmdList[1]; // all other commands
+	var cmdList = input.split(/\s*\|\s*/g); // array split on pipes
+	commandsAndArgs = cmdList.map(function(a){return a.split(" ");}); // further split into subarrays on spaces
 	
-	var commandList = [beforePipe.split(" ")[0]]; 
-	
-	if(afterPipe){
-		var allOtherCommands = afterPipe.split(" ");
-		commandList = commandList.concat(allOtherCommands);
-	}
-	
-	var args = beforePipe.split(" ").slice(1); // everything following that initial command
-	
-	var currentCMD = commandList.shift();
-	commands[currentCMD](undefined,args,commandList);
+	var current = commandsAndArgs[0]; // the first subarray
+	// current[0] is the actual commmand 
+	//current.slice(1) is all the potential args following it
+	commands[current[0]](undefined,current.slice(1),commandsAndArgs.slice(1));
 });
