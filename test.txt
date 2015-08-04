@@ -1,6 +1,6 @@
-this is a test
-this is only a test
-this is only a test
-EOF
-this is the fifth line
-this is the sixth line
+if you head or cat this is the first line you see
+if you tail this is the first line you see
+if you see this line just once, you called uniq
+if you see this line just once, you called uniq
+if you head this is the last line you see
+if you cat or tail this is the last line you see

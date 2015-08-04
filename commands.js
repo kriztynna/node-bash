@@ -1,27 +1,27 @@
 var fs = require('fs');
 var request = require('request');
 
-function done(output,x){
-	if(x.length===0){
+function done(output,cmdList){
+	if(cmdList.length===0){
 		process.stdout.write(output);
 		process.stdout.write('\nque pasa > ');
 	}
 	else {
-		var nextFunc = x.shift();
-		module.exports[nextFunc](output,undefined,x);
+		var nextFunc = cmdList.shift();
+		module.exports[nextFunc](output,undefined,cmdList);
 	}
 }
 
-function pwd(stdin,file,x) {
-	done(process.cwd(),x);	
+function pwd(stdin,file,cmdList) {
+	done(process.cwd(),cmdList);	
 }
 
-function date(stdin,file,x){
+function date(stdin,file,cmdList){
 	var newDate = new Date();
-	done(newDate.toString(),x);
+	done(newDate.toString(),cmdList);
 }
 
-function ls(stdin,input,x){
+function ls(stdin,input,cmdList){
 	var fileList=[];
 	fs.readdir('.', function(err,files){
 		if (err) throw err;
@@ -29,118 +29,118 @@ function ls(stdin,input,x){
 			fileList.push(f.toString());
 		});
 	fileList = fileList.join("\n");
-	done(fileList,x);
+	done(fileList,cmdList);
 	});
 
 }
 
-function echo(stdin,file,x){
-	done(file,x);
+function echo(stdin,words,cmdList){
+	done(words.join(" "),cmdList);
 }
 
-function cat(stdin,files,x){
+function cat(stdin,files,cmdList){
 	if (!stdin){
 		var texts = [];
 		var count = 0;
 		files.forEach(function(filename,i){
-			fs.readFile(filename,{'encoding':'utf8'},function(err,text){
+			fs.readFile(filename,{encoding:'utf8'},function(err,text){
 				if (err) throw err;
 				texts[i] = text;
 				count++;
-				if(count===files.length) { done(texts.join("\n"),x); }
+				if(count===files.length) { done(texts.join("\n"),cmdList); }
 			});
 		});
 	}
 	else {
-		done(stdin,x);
+		done(stdin,cmdList);
 	}
 }
 
-function head(stdin,file,x){
+function head(stdin,fileList,cmdList){
 	if (!stdin){
+		var file = fileList[0]; // only uses the first file
 		fs.readFile(file, 'utf8',function(err,contents){
 			if (err) throw err;
-			done(contents.toString().split('\n').slice(0,5).join('\n'),x);
+			done(contents.toString().split('\n').slice(0,5).join('\n'),cmdList);
 		});
 	}
 	else {
-		done(stdin.toString().split('\n').slice(0,5).join('\n'),x);
+		done(stdin.toString().split('\n').slice(0,5).join('\n'),cmdList);
 	}
 }
 
-function tail(stdin,file,x){
+function tail(stdin,fileList,cmdList){
 	if (!stdin){
+		var file = fileList[0]; // only uses the first file
 		fs.readFile(file, 'utf8',function(err,contents){
 			if (err) throw err;
-			done(contents.toString().split('\n').slice(-5).join('\n'),x);
+			done(contents.toString().split('\n').slice(-5).join('\n'),cmdList);
 		});			
 	}
 	else {
-		done(stdin.toString().split('\n').slice(-5).join('\n'),x);
+		done(stdin.toString().split('\n').slice(-5).join('\n'),cmdList);
 	}
 }
 
-function wc(stdin,file,x){
+function wc(stdin,fileList,cmdList){
 	if (!stdin){
+		var file = fileList[0]; // only uses the first file
 		fs.readFile(file, 'utf8',function(err,contents){
 			if (err) throw err;
-			done(String(contents.toString().split('\n').length),x);
+			done(String(contents.toString().split('\n').length),cmdList);
 		});			
 	}
 	else {
-		done(String(stdin.toString().split('\n').length),x);
+		done(String(stdin.toString().split('\n').length),cmdList);
 	}
 }
 
-function sort(stdin,file,x){
+function sort(stdin,fileList,cmdList){
 	if (!stdin){
+		var file = fileList[0]; // only uses the first file
 		fs.readFile(file, 'utf8',function(err,contents){
 			if (err) throw err;
 			var sorted = contents.toString().split('\n').sort().join('\n');
-			done(sorted,x);
+			done(sorted,cmdList);
 		});		
 	}
 	else {
 		var sorted = stdin.toString().split('\n').sort().join('\n');
-		done(sorted,x);
+		done(sorted,cmdList);
 	}
 }
 
-function uniq(stdin,file,x){
+function uniqfilter (elem,idx,arr){
+	if (idx===0){
+		return true;
+	}
+	if (elem!=arr[idx-1]){
+		return true;
+	}
+	return false;
+}
+
+function uniq(stdin,fileList,cmdList){
 	if (!stdin){
+		var file = fileList[0]; // only uses the first file
 		fs.readFile(file, 'utf8',function(err,contents){
 			if (err) throw err;
-			var unique = contents.toString().split('\n').filter(function(elem,idx,arr){
-				if (idx===0){
-					return true;
-				}
-				if (elem!=arr[idx-1]){
-					return true;
-				}
-				return false;
-			}).join("\n");
-			done(unique,x);
+			var unique = contents.toString().split('\n').filter(uniqfilter).join("\n");
+			done(unique,cmdList);
 		});			
 	}
 	else {
-		var unique = contents.toString().split('\n').filter(function(elem,idx,arr){
-			if (idx===0){
-				return true;
-			}
-			if (elem!=arr[idx-1]){
-				return true;
-			}
-			return false;
-		}).join("\n");
-		done(unique,x);
+		var unique = contents.toString().split('\n').filter(uniqfilter).join("\n");
+		done(unique,cmdList);
 	}
 }
 
-function curl(stdin,url,x){
+function curl(stdin,url,cmdList){
 	var input = setInput(stdin,url);
 	request('http://'+url,function(error,response,body){
 		if (!error && response.statusCode == 200) {
-			done(body,x);		}
+			done(body,cmdList);
+		}
 	});
 }
 
