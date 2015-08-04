@@ -7,8 +7,10 @@ function done(output,cmdList){
 		process.stdout.write('\nque pasa > ');
 	}
 	else {
-		var nextFunc = cmdList.shift();
-		module.exports[nextFunc](output,undefined,cmdList);
+		var nextCmdAndArgs = cmdList[0];
+		var nextCmd = nextCmdAndArgs[0];
+		var nextArgs = nextCmdAndArgs.slice(1);
+		module.exports[nextCmd](output,nextArgs,cmdList.slice(1));
 	}
 }
 
@@ -144,6 +146,12 @@ function curl(stdin,url,cmdList){
 	});
 }
 
+function grep (stdin,args,cmdList){
+	var matchString = args.join(" ");
+	var matchedLines = stdin.split("\n").filter(function(a){return a.indexOf(matchString)>-1;});
+	done(matchedLines.join("\n"),cmdList);
+}
+
 function setInput(stdin,file){
 	if(stdin===undefined){
 		return file;
@@ -162,3 +170,4 @@ module.exports.wc = wc;
 module.exports.sort = sort;
 module.exports.uniq = uniq;
 module.exports.curl = curl;
+module.exports.grep = grep;
