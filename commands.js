@@ -53,7 +53,16 @@ function catFiles(fileList,currOutput,x){
 
 function cat(stdin,files,x){
 	if (!stdin){
-		catFiles(files,'',x);
+		var texts = [];
+		var count = 0;
+		files.forEach(function(filename,i){
+			fs.readFile(filename,{'encoding':'utf8'},function(err,text){
+				if (err) throw err;
+				texts[i] = text;
+				count++;
+				if(count===files.length) { done(texts.join("\n"),x); }
+			});
+		});
 	}
 	else {
 		done(stdin,x);
