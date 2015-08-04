@@ -132,7 +132,7 @@ function uniq(stdin,fileList,cmdList){
 		});			
 	}
 	else {
-		var unique = contents.toString().split('\n').filter(uniqfilter).join("\n");
+		var unique = stdin.toString().split('\n').filter(uniqfilter).join("\n");
 		done(unique,cmdList);
 	}
 }
