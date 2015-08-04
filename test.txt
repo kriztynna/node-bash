@@ -2,3 +2,5 @@ this is a test
 this is only a test
 this is only a test
 EOF
+this is the fifth line
+this is the sixth line

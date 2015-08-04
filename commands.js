@@ -1,12 +1,14 @@
 var fs = require('fs');
 var request = require('request');
 
-var done =function(output,x){
-	if(x===0){process.stdout.write(output);
-	process.stdout.write('\nque pasa > ');
+function done(output,x){
+	if(x.length===0){
+		process.stdout.write(output);
+		process.stdout.write('\nque pasa > ');
 	}
-	else{
-		return output;
+	else {
+		var nextFunc = x.shift();
+		module.exports[nextFunc](output,undefined,x);
 	}
 }
 
@@ -14,69 +16,119 @@ function pwd(stdin,file,x) {
 	done(process.cwd(),x);	
 }
 
-function date(stdin,file){
-	var date = new Date();
-	done(date.toString(),x);
+function date(stdin,file,x){
+	var newDate = new Date();
+	done(newDate.toString(),x);
 }
 
-function ls(stdin,file,x){
-	var val="";
+function ls(stdin,input,x){
+	var fileList=[];
 	fs.readdir('.', function(err,files){
 		if (err) throw err;
-		files.forEach(function(file) {
-			val +=file.toString()+'\n';
+		files.forEach(function(f) {
+			fileList.push(f.toString());
 		});
-	done(val,x);
+	fileList = fileList.join("\n");
+	done(fileList,x);
 	});
 
 }
 
 function echo(stdin,file,x){
 	done(file,x);
-	}
+}
 
-function cat(stdin,file,x){
-	fs.readFile(file,function(err,contents){
+function catFiles(fileList,currOutput,x){
+	fs.readFile(fileList[0],'utf8',function(err,contents){
 		if (err) throw err;
-		done(contents,x);
+		currOutput+=contents+'\n';
+		if (fileList.length>1){
+			catFiles(fileList.slice(1),currOutput,x);
+		}
+		else {
+			done(currOutput,x);			
+		}
 	});
 }
 
+function cat(stdin,files,x){
+	if (!stdin){
+		catFiles(files,'',x);
+	}
+	else {
+		done(stdin,x);
+	}
+}
+
 function head(stdin,file,x){
-	var newfile=setInput(stdin,file);
-	fs.readFile(newfile, 'utf8',function(err,contents){
-		if (err) throw err;
-		done(contents.toString().split('\n').slice(0,5).join('\n'),x);
-	});	
+	if (!stdin){
+		fs.readFile(file, 'utf8',function(err,contents){
+			if (err) throw err;
+			done(contents.toString().split('\n').slice(0,5).join('\n'),x);
+		});
+	}
+	else {
+		done(stdin.toString().split('\n').slice(0,5).join('\n'),x);
+	}
 }
 
 function tail(stdin,file,x){
-	fs.readFile(file, 'utf8',function(err,contents){
-		if (err) throw err;
-		done(contents.toString().split('\n').slice(-5).join('\n'),x);
-	});	
+	if (!stdin){
+		fs.readFile(file, 'utf8',function(err,contents){
+			if (err) throw err;
+			done(contents.toString().split('\n').slice(-5).join('\n'),x);
+		});			
+	}
+	else {
+		done(stdin.toString().split('\n').slice(-5).join('\n'),x);
+	}
 }
 
 function wc(stdin,file,x){
-	fs.readFile(file, 'utf8',function(err,contents){
-		if (err) throw err;
-		done(String(contents.toString().split('\n').length),x);
-	});	
+	if (!stdin){
+		fs.readFile(file, 'utf8',function(err,contents){
+			if (err) throw err;
+			done(String(contents.toString().split('\n').length),x);
+		});			
+	}
+	else {
+		done(String(stdin.toString().split('\n').length),x);
+	}
 }
 
 function sort(stdin,file,x){
-	fs.readFile(file, 'utf8',function(err,contents){
-		if (err) throw err;
-		var sorted = contents.toString().split('\n').sort().join('\n');
+	if (!stdin){
+		fs.readFile(file, 'utf8',function(err,contents){
+			if (err) throw err;
+			var sorted = contents.toString().split('\n').sort().join('\n');
+			done(sorted,x);
+		});		
+	}
+	else {
+		var sorted = stdin.toString().split('\n').sort().join('\n');
 		done(sorted,x);
-	});	
+	}
 }
 
 function uniq(stdin,file,x){
-	fs.readFile(file, 'utf8',function(err,contents){
-		if (err) throw err;
+	if (!stdin){
+		fs.readFile(file, 'utf8',function(err,contents){
+			if (err) throw err;
+			var unique = contents.toString().split('\n').filter(function(elem,idx,arr){
+				if (idx===0){
+					return true;
+				}
+				if (elem!=arr[idx-1]){
+					return true;
+				}
+				return false;
+			}).join("\n");
+			done(unique,x);
+		});			
+	}
+	else {
 		var unique = contents.toString().split('\n').filter(function(elem,idx,arr){
-			if (idx==0){
+			if (idx===0){
 				return true;
 			}
 			if (elem!=arr[idx-1]){
@@ -85,15 +137,17 @@ function uniq(stdin,file,x){
 			return false;
 		}).join("\n");
 		done(unique,x);
-	});	
+	}
 }
 
 function curl(stdin,url,x){
+	var input = setInput(stdin,url);
 	request('http://'+url,function(error,response,body){
 		if (!error && response.statusCode == 200) {
 			done(body,x);		}
-	})
+	});
 }
+
 function setInput(stdin,file){
 	if(stdin===undefined){
 		return file;
